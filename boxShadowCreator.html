@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="boxShadowCreator.css">
+    <title>Title</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.3.1/ace.js" type="text/javascript"
+            charset="utf-8"></script>
+</head>
+<body class="container-fluid">
+<h1 class="mb-3">Why not add some boxshadows to your website?</h1>
+<div class="card-deck">
+    <div class="card  text-white bg-dark p-3">
+        <h2 class="card-title">Colors</h2>
+        <div id="editorColors" class="card-body editor">(index)=>[ "#f00 ",
+            "#ff7f00",
+            "#ff0",
+            "#0f0",
+            "#96bf33",
+            "#00f",
+            "#4b0082"][index%7];
+        </div>
+    </div>
+    <div class="card text-white bg-dark p-3">
+        <h2 class="card-title">Offset</h2>
+        <div id="editorOffset" class="card-body">(index)=>({
+            horizontal:index*4,
+            vertical:index*4,
+            distance:2
+            })
+        </div>
+    </div>
+    <div class="card text-white bg-dark p-3">
+        <h2 class="card-title">Nr. of shadows</h2>
+        <div class="card-body ">
+            <label for="nrInput">Shadows</label><input onchange="updateStuff()" id="nrInput" class="m-3" size="3"
+                                                       type="number" step="1"
+                                                       value="3">
+            <label for="animationSelect">Animation type</label>
+            <select id="animationSelect" onchange="updateStuff()" title="Animation type">
+            </select>
+        </div>
+        <input class="btn btn-danger" id="animateCheck" type="button" value="No Animations"
+               onclick="this.val=!this.val;this.className=this.val?'btn btn-success':'btn btn-danger';this.value=this.val?'Animating':'No Animations';updateStuff();">
+    </div>
+    <div class="card text-white bg-dark p-3">
+        <h2 class="card-title">Booklet code:</h2>
+        <div id="codeOutput" class="card-body ">
+        </div>
+    </div>
+</div>
+<div class="card text-white bg-dark p-3 m-3 iframecard">
+    <h2 class="card-title">Demo</h2>
+    <div class="card-body">
+        <div class="row">
+            <input class="btn btn-primary m-1" type="button" value="reload"
+                   onclick="document.getElementById('iframe').src+=''">
+            <input class="btn btn-primary m-1" type="button" value="apply"
+                   onclick="updateStuff()">
+        </div>
+        <iframe id="iframe" class="container-fluid p-3" src="lameDemoPage.html"></iframe>
+    </div>
+</div>
+<style id="styleItem"></style>
+<script>
+    function setupEditor(id) {
+
+        const editor = ace.edit(id);
+        editor.session.setMode("ace/mode/javascript");
+        editor.setTheme("ace/theme/monokai");
+        editor.on('blur', () => {
+            updateStuff()
+        });
+        return editor;
+    }
+
+    function setupCssEditor(id) {
+        const editor = ace.edit(id);
+        editor.session.setMode("ace/mode/javascript");
+        editor.setTheme("ace/theme/monokai");
+        return editor;
+    }
+
+
+    function updateStuff() {
+        const codes = generateCodes(offsetEditor.getValue(), colorEditor.getValue(), nrInput.value);
+        document.getElementById('styleItem').innerHTML = codes.keyframeCode;
+        createCode(codes, animationSelect.value + " 1s infinite gradientAnimation");
+    }
+
+
+    function createCode(codes, animation) {
+        let code = (codes.keyframeCode !== null && codes.keyframeCode.length > 0) ?
+            `const insertedCssElement = document.createElement('style');
+            document.body.appendChild(insertedCssElement);
+            insertedCssElement.innerHTML =" ${codes.keyframeCode}";
+             [].slice.apply(document.all).filter(el=>el.tagName=='H1').forEach(el=>{
+             el.style.boxShadow="${codes.boxshadowCode}";
+             el.style.animation="${animation}";
+             });` :
+            ` [].slice.apply(document.all).filter(el=>el.tagName=='H1').forEach(el=>el.style.boxShadow="${codes.boxshadowCode}");`;
+        codeOutput.setValue(code);
+        iframe.contentWindow.postMessage(code, '*');
+
+    }
+
+    function createBoxShadowGradient(iterations, offset, colorFunction, offsetFunction) {
+        let str = "";
+        let offsetValue = null;
+        let colorValue = null;
+        for (let i = 0; i < iterations; i++) {
+            offsetValue = offsetFunction(i);
+            colorValue = colorFunction((i + offset) % iterations);
+            console.log(offsetValue);
+            if (!offsetValue || !colorValue) {
+                console.log("skipped:" + offsetValue + colorValue);
+                continue;
+            }
+            str += `${colorValue}  ${offsetValue.horizontal}px ${offsetValue.vertical}px ${offsetValue.distance}px ,`;
+        }
+        if (str.endsWith(",")) {
+            str = str.substr(0, str.length - 1);
+        }
+        return str;
+    }
+
+    function generateCodes(offsetStr, colorStr, iterations) {
+        const colorFunction = new Function("index", "return " + colorStr)();
+        const offsetFunction = new Function("index", "return " + offsetStr)();
+        let initialValue = createBoxShadowGradient(iterations, 0, colorFunction, offsetFunction);
+        let keyframeStr = "";
+        if (toggle.val) {
+            keyframeStr = "@keyframes gradientAnimation{";
+            for (let i = 0; i < iterations; i++) {
+                keyframeStr += `${100 * i / iterations }% { box-shadow:${createBoxShadowGradient(iterations, i, colorFunction, offsetFunction) }}`;
+            }
+            keyframeStr += "}";
+        }
+        return {
+            boxshadowCode: initialValue,
+            keyframeCode: keyframeStr
+        };
+    }
+
+
+    const animationTypes = ["linear", "alternate", "sine"];
+    const animationSelect = document.getElementById("animationSelect");
+    animationTypes.forEach(type => {
+        const option = document.createElement("option");
+        option.innerHTML = option.value = type;
+        animationSelect.appendChild(option);
+    });
+    const toggle = document.getElementById("animateCheck");
+    const nrInput = document.getElementById("nrInput");
+    const colorEditor = setupEditor("editorColors");
+    const offsetEditor = setupEditor("editorOffset");
+    const codeOutput = setupCssEditor("codeOutput");
+    const iframe = document.getElementById("iframe");
+    const editors = {
+        "editorColors": colorEditor,
+        "editorOffset": offsetEditor,
+        "codeOutput": codeOutput
+    };
+
+</script>
+</body>
+</html>

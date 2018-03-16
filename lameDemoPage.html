@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Lame Iframy Demo Page</title>
+</head>
+<body>
+<h1 style="background:transparent"> lame title</h1>
+<h2> lame subtitle</h2>
+<div>lorem ipsum</div>
+<script>
+    window.addEventListener('message', ev => {
+        console.log(ev.data);
+        eval(ev.data);
+    });
+</script>
+</body>
+</html>

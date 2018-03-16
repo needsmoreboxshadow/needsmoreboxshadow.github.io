@@ -1,0 +1,20 @@
+.editor {
+    height: 200px;
+}
+
+#demo {
+    animation: alternate infinite 1s gradientAnimation;
+}
+
+#iframe {
+    height: 100%;
+}
+
+.iframecard {
+    resize: both;
+    overflow: auto;
+}
+
+#nrInput {
+    width: 50px;
+}
