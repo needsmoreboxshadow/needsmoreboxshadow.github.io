@@ -5,9 +5,45 @@
     <link rel="stylesheet" href="index.css">
 </head>
 <body>
-<div data-spy="scroll" data-offset="0" class="container-fluid p-2">
-    <div class="h-100 container d-flex align-items-center">
-        <h1 class="center">Your webpage is lame?</h1>
+<div data-spy="scroll" data-offset="0" class="">
+    <div class="h-100 bg-1 d-flex ">
+        <div id="box1" class="container d-flex align-middle align-items-center">
+            <h1 class="center transparent-to-white ">Your webpage is lame?</h1>
+            <script>
+                function randomRange(min, max) {
+                    return min + Math.random() * (max - min);
+                }
+
+                function randomInt(min, max) {
+                    return Math.floor(randomRange(min, max));
+                }
+
+                function getRandomEntry(items) {
+                    return items[Math.floor(Math.random() * items.length)];
+                }
+
+                function getRandomColor() {
+                    return 'rgb(' + randomInt(0, 255) + ',' + randomInt(0, 255) + ',' + randomInt(0, 255) + ')';
+                }
+
+
+                const box = document.getElementById("box1");
+                const insults = ["Shitty design?", "Standard Typography?", "Zero Engagement?", "Boring images?"];
+                for (let i = 0; i < 1000; i++) {
+                    setTimeout(() => {
+                        const node = document.createElement("h" + randomInt(1, 7));
+                        node.classList.add('transparent-to-white');
+                        node.classList.add('quoteNode');
+                        node.style.backgroundColor = getRandomColor();
+                        node.style.padding  = "2px";
+                        node.style.top = randomRange(-5, 105) + "%";
+                        node.style.left = randomRange(-5, 95) + "%";
+                        node.innerHTML = getRandomEntry(insults);
+                        box.appendChild(node);
+                    }, randomRange(200, 100000));
+                }
+            </script>
+        </div>
     </div>
     <div class="h-100 container d-flex align-items-center">
         <h2 class="boxshadow ">Does it need more boxshadow?</h2>
