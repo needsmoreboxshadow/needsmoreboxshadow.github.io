@@ -9,44 +9,13 @@
     <div class="h-100 bg-1 d-flex ">
         <div id="box1" class="container d-flex align-middle align-items-center">
             <h1 class="center transparent-to-white ">Your webpage is lame?</h1>
-            <script>
-                function randomRange(min, max) {
-                    return min + Math.random() * (max - min);
-                }
-
-                function randomInt(min, max) {
-                    return Math.floor(randomRange(min, max));
-                }
-
-                function getRandomEntry(items) {
-                    return items[Math.floor(Math.random() * items.length)];
-                }
-
-                function getRandomColor() {
-                    return 'rgb(' + randomInt(0, 255) + ',' + randomInt(0, 255) + ',' + randomInt(0, 255) + ')';
-                }
-
-
-                const box = document.getElementById("box1");
-                const insults = ["Shitty design?", "Standard Typography?", "Zero Engagement?", "Boring images?"];
-                for (let i = 0; i < 1000; i++) {
-                    setTimeout(() => {
-                        const node = document.createElement("h" + randomInt(1, 7));
-                        node.classList.add('transparent-to-white');
-                        node.classList.add('quoteNode');
-                        node.style.backgroundColor = getRandomColor();
-                        node.style.padding  = "2px";
-                        node.style.top = randomRange(-5, 105) + "%";
-                        node.style.left = randomRange(-5, 95) + "%";
-                        node.innerHTML = getRandomEntry(insults);
-                        box.appendChild(node);
-                    }, randomRange(200, 100000));
-                }
-            </script>
         </div>
     </div>
-    <div class="h-100 container d-flex align-items-center">
-        <h2 class="boxshadow ">Does it need more boxshadow?</h2>
+    <div id="box2" class="h-100 d-flex">
+        <canvas id="box2Canvas" class="h-100 w-100"></canvas>
+        <div class="container d-flex align-middle align-items-center">
+            <h2 class="boxshadow">Does it need more RGB?</h2>
+        </div>
     </div>
     <div class="h-100 container d-flex align-items-center">
         <h2>
@@ -62,5 +31,191 @@
     </div>
 
 </div>
+<script>
+    function randomRange(min, max) {
+        return min + Math.random() * (max - min);
+    }
+
+    function randomInt(min, max) {
+        return Math.floor(randomRange(min, max));
+    }
+
+    function getRandomEntry(items) {
+        return items[Math.floor(Math.random() * items.length)];
+    }
+
+    function getRandomColor() {
+        return 'rgb(' + randomInt(0, 255) + ',' + randomInt(0, 255) + ',' + randomInt(0, 255) + ')';
+    }
+
+    function rotateAround(center, point, angle) {
+        const sin = Math.sin(angle);
+        const cos = Math.cos(angle);
+        const absX = point.x - center.x;
+        const absY = point.y - center.y;
+        return {
+            x: absX * cos - absY * sin + center.x,
+            y: absX * sin + absY * cos + center.y
+        };
+    }
+
+    function makeBoxPoints(tL, width, height) {
+        const offset = (dot, w, h) => {
+            return {x: dot.x + w, y: dot.y + h}
+        };
+        return [
+            offset(tL, 0, 0),
+            offset(tL, width, 0),
+            offset(tL, width, height),
+            //   offset(tL, 0,height)
+        ];
+    }
+
+    function getRandomTransform() {
+        const transformCreators = [
+            () => 'rotate(' + randomInt(-30, 30) + 'deg)',
+            () => 'rotate3d(' + Math.random() + ' , ' + Math.random() + ' , ' + Math.random() + ' , ' + randomInt(-30, 30) + 'deg)',
+            () => 'scaleX(' + randomInt(0.7, 1.5) + 'deg)',
+            () => 'skewX(' + randomInt(-20, 20) + 'deg)',
+            () => 'skewY(' + randomInt(-20, 20) + 'deg)',
+            () => 'none'
+        ];
+        const result = getRandomEntry(transformCreators)();
+        //console.log(result);
+        return result;
+    }
+
+    function fillPolygon(ctx, dots) {
+        ctx.beginPath();
+        ctx.moveTo(dots[0].x + 0.1, dots[0].y + 0.1);
+        dots.forEach(dot => ctx.lineTo(dot.x + 0.1, dot.y + 0.1));
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    const createBoxes = [
+        () => {
+            const box = document.getElementById('box1');
+            const insults = ["Shitty design?",
+                "Standard Typography?",
+                "Zero Engagement?",
+                "No CSS",
+                "Designed from 1999",
+                "unresponsive",
+                "loads forever",
+                "too few animations",
+                "too few colors",
+                "No Web 4.0",
+                "Missing Blockchain?",
+                "Needs AI",
+                "I can't pay with bitcoins",
+                "Lame domain name?",
+                "Bad Usability",
+                "Still using jQuery?",
+                "Still using JSP?",
+                "One Dimensional Navigation",
+                "Using Google Maps as Sitemap?",
+                "SSLv2?",
+                "Still has leftover wireframes?",
+                "No parallax scrolling?",
+                "Is not Netscape Navigator compatible?",
+                "Still using SQL? #noSQL",
+                "Still using Frames?",
+                "Best viewed in 640x480",
+                "12MB minified JS?",
+                "Unreadable on 4k?",
+                "Only using Ajax to clean?",
+                "Expecting canvas only in a gallery?",
+                "Slow loading times",
+                "Boring images?", "Still using Wordpress?", "Not using Wordpress?",
+                "Not Machine Learning Improved?",
+                "Can't find this in Google",
+                "Bad SEO?",
+                "Bad CEO?",
+                "Bad CTO?",
+                "Bad CDO?",
+            ];
+
+            for (let i = 0; i < 1000; i++) {
+                setTimeout(() => {
+                    const node = document.createElement("h" + randomInt(1, 7));
+                    node.classList.add('transparent-to-white');
+                    node.classList.add('quoteNode');
+                    node.style.backgroundColor = getRandomColor();
+                    node.style.padding = "2px";
+                    node.style.top = randomRange(-5, 105) + "%";
+                    node.style.left = randomRange(-5, 95) + "%";
+                    node.style.transform = getRandomTransform();
+                    node.innerHTML = getRandomEntry(insults);
+                    box.appendChild(node);
+                }, randomRange(200, 60000));
+            }
+        },
+        () => {
+            const box = document.getElementById('box2');
+            const canvas = document.getElementById('box2Canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = box.clientWidth;
+            canvas.height = box.clientHeight;
+            const canvasWidth = canvas.width;
+            const canvasHeight = canvas.height;
+            const generateBoxShadow = (steps, colors) => {
+                const sineCutoff = 30;
+                const yDiff = 30;
+                const shadowHeight = 1;
+                const animationSteps = [];
+                const percentFunction = (idx) => {
+                    if (idx === 0) {
+                        return '0%,100';
+                    }
+                    return Math.floor(100 * idx / colors.length);
+                };
+                const fakeSine = (idx) => {
+                    const y = Math.cos(idx / 15);
+                    const xF =5;// 5*idx/steps;
+                    return Math.floor( yDiff * y * xF);
+                };
+                for (let colorIdx = 0; colorIdx < colors.length; colorIdx++) {
+                    const subSteps = [];
+                    const saltMap = randomInt(0,10);
+                    for (let idx = 0; idx < steps; idx++) {
+                        subSteps.push(`${colors[(idx+colorIdx) % colors.length]} ${ idx * 3}px ${fakeSine((colorIdx+idx*idx))}px`);
+                    }
+                    animationSteps.push(` ${percentFunction(colorIdx)}%{ box-shadow: ${subSteps.join(',')};}`);
+                    console.log(animationSteps[colorIdx]);
+                }
+                const style = document.createElement('style');
+                style.type = 'text/css';
+                style.innerHTML = '@keyframes boxshadowGlow{' + animationSteps.join('\n') + '}';
+                document.getElementsByTagName('head')[0].appendChild(style);
+            };
+            const colors = ['#f00', '#ff7f00', '#ff0', '#0f0', '#96bf33', '#00f', '#4b0082'];
+            generateBoxShadow(400, colors);
+            for (let i = 0; i < 1000; i++) {
+                const tL = {
+                    x: randomInt(-100, canvasWidth),
+                    y: randomInt(-100, canvasHeight)
+                };
+                const angle = randomInt(-30, 30);
+                const width = randomInt(0, 0.3 * canvasWidth);
+                const height = randomInt(0, 0.3 * canvasHeight);
+                const points = makeBoxPoints(tL, width, height)
+                    .map(dot => rotateAround(tL, dot, angle));
+                context.fillStyle = getRandomColor();
+                fillPolygon(context, points);
+            }
+
+            const dots = [];
+            for (let i = 0; i < 20; i++) {
+                dots.push({x: randomRange(0, canvasWidth), y: randomRange(0, canvasHeight)});
+            }
+
+
+        }
+
+    ];
+    createBoxes.forEach(x => x());
+</script>
+
 </body>
 </html>
