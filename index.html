@@ -1,5 +1,10 @@
 <html>
 <head>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.1/ace.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.1/ext-language_tools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.1/worker-javascript.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.1/ext-beautify.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
           integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <link rel="stylesheet" href="index.css">
@@ -14,15 +19,38 @@
     <div id="box2" class="h-100 d-flex">
         <canvas id="box2Canvas" class="h-100 w-100"></canvas>
         <div class="container d-flex align-middle align-items-center">
-            <h2 class="boxshadow">Does it need more RGB?</h2>
+            <div class="row">
+                <div class="col">
+                    <h2 class=" boxshadow">Does it need more RGB?</h2>
+                </div>
+                <div class="col m-0 p-0 codeContainer" style="background:#000;" id="ProgrammContainer">
+                    <div class="row d-flex m-2">
+                        <div id="reset" class="btn btn-sm m-1 btn-secondary">Reset</div>
+                        <div id="run" class="btn btn-sm m-1 btn-primary">Run</div>
+                    </div>
+                    <div id="ProgrammEditor"></div>
+                </div>
+            </div>
         </div>
+
     </div>
     <div class="h-100 container d-flex align-items-center">
         <h2>
             Does it need more
             <marquee class="cyber"> CYBER</marquee>
+
         </h2>
     </div>
+    <script>
+        let editor = ace.edit("ProgrammEditor");
+        ace.require("ace/ext/language_tools");
+        editor.setOptions({
+            enableBasicAutocompletion: true
+        });
+        // editor.setTheme("https://cdn.jsdelivr.net/ace/1.2.6/min/theme-chaos.js");
+        editor.setTheme("ace/theme/monokai");
+        editor.getSession().setMode("ace/mode/javascript");
+    </script>
     <div class="h-100 container d-flex align-items-center">
         <h2>
             Does it need more
@@ -136,7 +164,7 @@
                 "Bad CDO?",
             ];
 
-            for (let i = 0; i < 1000; i++) {
+            for (let i = 0; i < 500; i++) {
                 setTimeout(() => {
                     const node = document.createElement("h" + randomInt(1, 7));
                     node.classList.add('transparent-to-white');
@@ -159,9 +187,12 @@
             canvas.height = box.clientHeight;
             const canvasWidth = canvas.width;
             const canvasHeight = canvas.height;
+            const styleElement = document.createElement('style');
+            styleElement.type = 'text/css';
+            document.getElementsByTagName('head')[0].appendChild(styleElement);
             const generateBoxShadow = (steps, colors) => {
                 const sineCutoff = 30;
-                const yDiff = 30;
+                const yDiff = 100;
                 const shadowHeight = 1;
                 const animationSteps = [];
                 const percentFunction = (idx) => {
@@ -171,23 +202,20 @@
                     return Math.floor(100 * idx / colors.length);
                 };
                 const fakeSine = (idx) => {
-                    const y = Math.cos(idx / 15);
-                    const xF =5;// 5*idx/steps;
-                    return Math.floor( yDiff * y * xF);
+                    const y = Math.sin(idx / colors.length);
+                    const xF = Math.max(0.1, ((idx * idx) / (steps * steps)));
+                    return Math.floor(yDiff * y * xF);
                 };
-                for (let colorIdx = 0; colorIdx < colors.length; colorIdx++) {
+                for (let colorIdx = colors.length - 1; colorIdx >= 0; colorIdx--) {
                     const subSteps = [];
-                    const saltMap = randomInt(0,10);
+                    const saltMap = randomInt(0, 10);
                     for (let idx = 0; idx < steps; idx++) {
-                        subSteps.push(`${colors[(idx+colorIdx) % colors.length]} ${ idx * 3}px ${fakeSine((colorIdx+idx*idx))}px`);
+                        subSteps.push(`${colors[(idx + colorIdx) % colors.length]} ${ idx * 3}px ${fakeSine(idx + idx * colorIdx)}px`);
                     }
                     animationSteps.push(` ${percentFunction(colorIdx)}%{ box-shadow: ${subSteps.join(',')};}`);
                     console.log(animationSteps[colorIdx]);
                 }
-                const style = document.createElement('style');
-                style.type = 'text/css';
-                style.innerHTML = '@keyframes boxshadowGlow{' + animationSteps.join('\n') + '}';
-                document.getElementsByTagName('head')[0].appendChild(style);
+                styleElement.innerHTML = '@keyframes boxshadowGlow{' + animationSteps.join('\n') + '}';
             };
             const colors = ['#f00', '#ff7f00', '#ff0', '#0f0', '#96bf33', '#00f', '#4b0082'];
             generateBoxShadow(400, colors);
